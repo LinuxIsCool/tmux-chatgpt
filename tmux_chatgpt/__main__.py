@@ -33,10 +33,13 @@ def main():
     xdg_data_home = os.environ.get(
         'XDG_DATA_HOME', os.path.expanduser('~/.local/share')
     )
+    print(f'{xdg_data_home=}')
     plugin_data_dir = os.path.join(xdg_data_home, 'tmux-chatgpt')
+    print(f'{plugin_data_dir=}')
 
     # Read the user's query from stdin (captured from the tmux pane)
     query = sys.stdin.read()
+    print(f'{query=}')
 
     # Retrieve or initialize the context (here we just use a placeholder for demonstration)
     context = {
