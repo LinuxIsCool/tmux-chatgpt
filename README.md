@@ -15,3 +15,10 @@ Then press `prefix + I` in a tmux session to fetch and source the plugin.
 ## Usage
 
 Press `Ctrl+G` to invoke the tmux-chatgpt interaction window.
+
+## Running from package directory
+```
+poetry install
+poetry shell
+python -m tmux_chatgpt -m "Test"
+```

@@ -1,34 +1,67 @@
 #!/usr/bin/env python3
-import json
+import asyncio
 import os
-import sys
 
-import openai
+import click
+from openai import AsyncOpenAI
 
-
-def send_query_to_chatgpt(query, context):
-    """
-    Send the query to the ChatGPT API and retrieve the response.
-    :param query: The user's query from tmux session.
-    :param context: Previous conversation context.
-    :return: The response from ChatGPT.
-    """
-    # Placeholder for OpenAI API interaction
-    openai.api_key = os.environ.get('OPENAI_API_KEY')
-
-    try:
-        response = openai.Completion.create(
-            engine='davinci',
-            prompt=query,
-            max_tokens=150,
-            # Additional parameters can be added here
-        )
-        return response.choices[0].text.strip()
-    except Exception as e:
-        return str(e)
+client = AsyncOpenAI(
+    api_key=os.environ.get('OPENAI_API_KEY'),
+)
 
 
-def main():
+async def list_models_async() -> None:
+    models = await client.models.list()
+    return models
+
+
+async def completion_async(message, model='gpt-3.5-turbo') -> None:
+    completion = await client.chat.completions.create(
+        messages=[
+            {
+                'role': 'user',
+                'content': message,
+            }
+        ],
+        model=model,
+    )
+    return completion
+
+
+@click.command()
+@click.option(
+    '-l',
+    '--list-models',
+    'list_models_flag',
+    default=False,
+    is_flag=True,
+    help='List available models.',
+)
+@click.option(
+    '-d',
+    '--model',
+    'model',
+    type=click.Choice(['gpt-3.5-turbo', 'gpt-4'], case_sensitive=True),
+    default='gpt-3.5-turbo',
+    help='The model to use.',
+)
+@click.option('-m', '--message', 'message', help='The message to send.')
+def main(message: str, model: str, list_models_flag: bool):
+    asyncio.run(handle_command(message, model, list_models_flag))
+
+
+async def handle_command(message: str, model: str, list_models_flag: bool):
+    if list_models_flag:
+        models = await list_models_async()
+        models_data = dict(models)['data']
+        print(models_data)
+    else:
+        completion = await completion_async(message=message, model=model)
+        print(completion.choices[0].message.content)
+
+
+# Example of XDG data IO
+def handle_io():
     # Determine XDG base directories
     xdg_data_home = os.environ.get(
         'XDG_DATA_HOME', os.path.expanduser('~/.local/share')
