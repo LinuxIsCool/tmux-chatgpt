@@ -13,7 +13,9 @@ PLUGIN_CONFIG_DIR="$XDG_CONFIG_HOME/tmux-chatgpt"
 # Ensure the directories exist
 mkdir -p "$PLUGIN_DATA_DIR/threads" "$PLUGIN_CONFIG_DIR"
 
+# Move to the executing scripts directory and save the path to $SCRIPTS_DIR
 SCRIPTS_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+echo "SCRIPTS_DIR: $SCRIPTS_DIR" >> /tmp/chatgpt_debug.log
 
 # Function to invoke fzf with popup and capture the selected thread
 invoke_chatgpt() {
@@ -31,11 +33,17 @@ invoke_chatgpt() {
 
     # Clean up the temporary file
     rm "$temp_file"
+
+    # Start new thread
     if [[ $selected_thread == "New Conversation" ]]; then
-        python3 "$SCRIPTS_DIR/chatgpt_interact.py" < "$pane_content_file"
+        python "$SCRIPTS_DIR/__main__.py"
+
+    # Continue existing thread with context
     else
         local context_file="$PLUGIN_DATA_DIR/threads/${selected_thread}/context.json"
-        (cat "$context_file"; cat "$pane_content_file") | python3 "$SCRIPTS_DIR/chatgpt_interact.py"
+        echo "Context file: $context_file" >> /tmp/chatgpt_debug.log
+        # XXX TODO: Starting a session with context.
+        # (cat "$context_file") | python3 "$SCRIPTS_DIR/__main__.py -m"
     fi
 
     rm -f "$pane_content_file"

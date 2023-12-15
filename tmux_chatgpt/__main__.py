@@ -15,7 +15,7 @@ async def list_models_async() -> None:
     return models
 
 
-async def completion_async(message, model='gpt-3.5-turbo') -> None:
+async def completion_async(message, model='gpt-4') -> None:
     completion = await client.chat.completions.create(
         messages=[
             {
@@ -42,11 +42,13 @@ async def completion_async(message, model='gpt-3.5-turbo') -> None:
     '--model',
     'model',
     type=click.Choice(['gpt-3.5-turbo', 'gpt-4'], case_sensitive=True),
-    default='gpt-3.5-turbo',
+    default='gpt-4',
     help='The model to use.',
 )
 @click.option('-m', '--message', 'message', help='The message to send.')
 def main(message: str, model: str, list_models_flag: bool):
+    if message is None:
+        message = input('Enter your message: ')
     asyncio.run(handle_command(message, model, list_models_flag))
 
 
